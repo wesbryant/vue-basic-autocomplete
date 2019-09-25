@@ -12,8 +12,8 @@
             @blur="onBlur()"
             :placeholder="placeholder"
         >
-        <div class="autocomplete-list" v-if="filteredItems">
-            <ul v-if="filteredItems.length > 0" :style="`max-height: ${listMaxHeight}px`">
+        <div class="autocomplete-list" v-show="filteredItems" :class="{'show-results':filteredItems}" :style="`max-height: ${maxHeight}px`">
+            <ul v-if="filteredItems.length > 0">
                 <li v-for="(item, index) in filteredItems" :key="index"
                     :class="highlight == index ? 'highlight-class' : ''"
                     @mousedown="sendValue(item)"
@@ -70,6 +70,21 @@
             return {
                 highlight: -1,
                 filteredItems: false
+            }
+        },
+        computed: {
+            maxHeight() {
+                if( this.filteredItems === false ) {
+                    return 0;
+                }
+                else {
+                    if(this["list-max-height"]) {
+                        return this["list-max-height"];
+                    }
+                    else {
+                        return this.$el.querySelector('.autocomplete-list').scrollHeight();
+                    }
+                }
             }
         },
         methods: {
@@ -154,13 +169,15 @@
 }
 .autocomplete-list {
     z-index: 9999;
-    position: absolute;
-    top: 100%;
+    position: relative;
+    top: 0;
     left: 0;
     right: 0;
     border: 1px solid #ced4da;
     border-top: none;
     background-color: white;
+    overflow:hidden;
+    transition:max-height 500ms ease-in-out;
 }
 
 .autocomplete-list ul {
@@ -168,7 +185,15 @@
     list-style-type: none;
     margin: 0;
     padding: 0;
+    opacity:0;
+    transition:opacity 500ms ease-in-out;
+    transition-delay:200ms;
 }
+
+.autocomplete-list.show-results ul {
+    opacity:1;
+}
+
 .autocomplete-list ul li {
     padding: 6px;
     cursor: default;
